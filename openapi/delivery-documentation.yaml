@@ -1,0 +1,189 @@
+openapi: 3.0.3
+servers:
+    -   url: 'https://connect.visitme.hu:7575/'
+        description: Production server.
+info:
+    title: VisitMe API documentation for delivery services
+    version: 1.0.0
+paths:
+    /start:
+        post:
+            summary: Request a delivery guy to the restaurant to pick up an order then deliver it
+            parameters:
+                -   $ref: '#/components/parameters/defaultRequestHeader'
+                -   $ref: '#/components/parameters/authorizationRequestHeader'
+                -   $ref: '#/components/parameters/vendorAuthorizationRequestHeader'
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+                                    required: true
+                                    nullable: false
+                                    description: The name of the customer
+                                    example: Liu Kang
+                                    minLength: 1
+                                    maxLength: 255
+                                email:
+                                    type: string
+                                    format: email
+                                    required: true
+                                    description: The email address of the customer
+                                    example: kombat@mortal.com
+                                    minLength: 1
+                                    maxLength: 255
+                                    nullable: false
+                                phone:
+                                    type: string
+                                    required: true
+                                    minLength: 1
+                                    maxLength: 32
+                                    nullable: false
+                                    description: The phone number of the customer
+                                    format: E164
+                                    example: +36304796937
+                                address:
+                                    type: string
+                                    required: true
+                                    minLength: 1
+                                    maxLength: 255
+                                    example: "Debrecen, Kandia utca 1"
+                                    description: The address of the customer
+                                    format: "<city name>, <street name> <number>"
+                                floor:
+                                    type: string
+                                    nullable: true
+                                    default: null
+                                    example: 2 emelet
+                                    description: The floor of the apartman (if it's the case)
+                                    minLength: 1
+                                    maxLength: 255
+                                doorbell:
+                                    type: string
+                                    nullable: true
+                                    default: null
+                                    example: Liu Kang
+                                    description: The doorbell of the apartman (if it's the case)
+                                    minLength: 1
+                                    maxLength: 255
+                                latitude:
+                                    type: number
+                                    minimum: -90
+                                    maximum: 90
+                                    required: false
+                                    description: geo latitude of the address
+                                longitude:
+                                    type: number
+                                    minimum: -180
+                                    maximum: 180
+                                    required: false
+                                    description: geo longitude of the address
+                                total:
+                                    type: number
+                                    minimum: 1
+                                    required: true
+                                    description: the order's total value
+                                    example: 1550
+                                payment_method:
+                                    type: string
+                                    enum: ["cash", "online"]
+                                    description: the payment method
+                                    required: true
+                                    example: "cash"
+                                high_denomination:
+                                    type: string
+                                    nullable: true
+                                    description: The order paid with high denomination
+                                    enum: ["no", "5000", "10000", "20000"]
+                                    required: true
+                                    example: "no"
+                                order_id:
+                                    type: string
+                                    description: The order's unique id in the external system. One vendor, for one partner can upload only one order_id.
+                                    minLength: 1
+                                    maxLength: 255
+                                    required: true
+                                internal_id:
+                                    type: string
+                                    description: The order's unique id in in the restaurant (if exists)
+                                    minLength: 1
+                                    maxLength: 255
+                                    required: false
+                                pickup_note:
+                                    type: string
+                                    description: Note for the delivery guy from the restaurant
+                                    minLength: 1
+                                    maxLength: 255
+                                    required: false
+                                    nullable: true
+                                    example: Please come back at the back door
+                                delivery_note:
+                                    type: string
+                                    description: Note for the delivery guy from the customer
+                                    minLength: 1
+                                    maxLength: 255
+                                    required: false
+                                    nullable: true
+                                    example: Please ring twice
+                                pickup_date:
+                                    type: string
+                                    description: Pickup datetime of the order. Please always use CEST datetime
+                                    format: ISO8601
+                                    example: 2022-11-13T20:20:39+00:00
+                                delivery_date:
+                                    type: string
+                                    description: Wanted delivery datetime of the order. Please always use CEST datetime
+                                    format: ISO8601
+                                    example: 2022-11-13T20:20:39+00:00
+            responses:
+                '404':
+                    description: The restaurant with the given API key cannot be found
+                '403':
+                    description: The vendor with the given API key cannot be found
+                '500':
+                    description: General server error
+                '200':
+                    description: Returns the order details
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                description: the orders's data
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: returns true if the operation was successfull otherwise false
+                                        example: true
+                                    data:
+                                        type: string
+                                        description: in case of error returns a readable error message
+components:
+    parameters:
+        defaultRequestHeader:
+            name: X-Requested-With
+            in: header
+            required: true
+            description: Required parameter for backend
+            schema:
+                type: string
+                default: XMLHttpRequest
+        authorizationRequestHeader:
+            name: x-api-key
+            in: header
+            required: true
+            description: The unique API key what authenticates the restaurant
+            schema:
+                type: string
+                example: eccf0e42-0a75-11ea-8d71-362b9e155667
+        vendorAuthorizationRequestHeader:
+            name: x-vendor-key
+            in: header
+            required: true
+            description: The unique API key what authenticates the external system what handles the request
+            schema:
+                type: string
+                example: eccf0e42-0a75-11ea-8d71-362b9e155665
+
