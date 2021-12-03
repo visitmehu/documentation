@@ -1,24 +1,31 @@
 openapi: 3.0.3
 servers:
-    -   url: 'https://connect.visitme.hu:7575/'
+    -   url: 'https://restaurant.visitme.hu/'
         description: Production server.
+    -   url: 'https://partner.hungry.hu/'
+        description: Stage server. HTTP AUTH protected. Ask the VisitMe support for username/pass
 info:
     title: VisitMe API documentation for delivery services
     version: 1.0.0
 paths:
-    /start:
+    /delivery-orders/add:
         post:
             summary: Request a delivery guy to the restaurant to pick up an order then deliver it
             parameters:
                 -   $ref: '#/components/parameters/defaultRequestHeader'
-                -   $ref: '#/components/parameters/authorizationRequestHeader'
-                -   $ref: '#/components/parameters/vendorAuthorizationRequestHeader'
+                -   $ref: '#/components/parameters/languageRequestHeader'
             requestBody:
                 content:
                     application/json:
                         schema:
                             type: object
                             properties:
+                                api_key:
+                                    type: string
+                                    required: true
+                                    nullable: false
+                                    example: ASDNBEAVBO51654SIND4516551FSDNFSPNDF
+                                    description: the restaurant's unique API key
                                 name:
                                     type: string
                                     required: true
@@ -45,6 +52,14 @@ paths:
                                     description: The phone number of the customer
                                     format: E164
                                     example: +36304796937
+                                zip:
+                                    type: number
+                                    required: true
+                                    minLength: 4
+                                    maxLength: 4
+                                    example: 4024
+                                    default: 4024
+                                    description: the zip code of the address
                                 address:
                                     type: string
                                     required: true
@@ -52,7 +67,7 @@ paths:
                                     maxLength: 255
                                     example: "Debrecen, Kandia utca 1"
                                     description: The address of the customer
-                                    format: "<city name>, <street name> <number>"
+                                    format: "<zip>, <city name> <street name> <number>"
                                 floor:
                                     type: string
                                     nullable: true
@@ -102,10 +117,10 @@ paths:
                                     example: "no"
                                 order_id:
                                     type: string
-                                    description: The order's unique id in the external system. One vendor, for one partner can upload only one order_id.
+                                    description: The order's unique id in the external system. One vendor, for one partner can upload only one order_id. If not given unix timestamp will be used
                                     minLength: 1
                                     maxLength: 255
-                                    required: true
+                                    required: false
                                 internal_id:
                                     type: string
                                     description: The order's unique id in in the restaurant (if exists)
@@ -130,19 +145,15 @@ paths:
                                     example: Please ring twice
                                 pickup_date:
                                     type: string
-                                    description: Pickup datetime of the order. Please always use CEST datetime
+                                    description: Pickup datetime of the order. Please always use CET/CEST datetime
                                     format: ISO8601
-                                    example: 2022-11-13T20:20:39+00:00
+                                    example: 2022-11-13T20:20:39+01:00
                                 delivery_date:
                                     type: string
-                                    description: Wanted delivery datetime of the order. Please always use CEST datetime
+                                    description: Wanted delivery datetime of the order. Please always use CET/CEST datetime
                                     format: ISO8601
-                                    example: 2022-11-13T20:20:39+00:00
+                                    example: 2022-11-13T20:20:39+01:00
             responses:
-                '404':
-                    description: The restaurant with the given API key cannot be found
-                '403':
-                    description: The vendor with the given API key cannot be found
                 '500':
                     description: General server error
                 '200':
@@ -158,8 +169,19 @@ paths:
                                         description: returns true if the operation was successfull otherwise false
                                         example: true
                                     data:
-                                        type: string
-                                        description: in case of error returns a readable error message
+                                        description: in case of success returns a readable success message othervise an object. The object keys are the fields, and in the value is an associative array with the rule, readable message pair
+                                        oneOf:
+                                            - type: string
+                                              example: Thank you.
+                                            - type: object
+                                              example: {
+                                                  "email": {
+                                                      "email": "Invalid e-mail address. MX check failed."
+                                                  },
+                                                  "payment_method": {
+                                                      "inList": "Invalid payment method"
+                                                  }
+                                              }
 components:
     parameters:
         defaultRequestHeader:
@@ -170,20 +192,13 @@ components:
             schema:
                 type: string
                 default: XMLHttpRequest
-        authorizationRequestHeader:
-            name: x-api-key
+        languageRequestHeader:
+            name: Accept-Language
             in: header
-            required: true
-            description: The unique API key what authenticates the restaurant
+            required: false
+            description: The language of the request
             schema:
                 type: string
-                example: eccf0e42-0a75-11ea-8d71-362b9e155667
-        vendorAuthorizationRequestHeader:
-            name: x-vendor-key
-            in: header
-            required: true
-            description: The unique API key what authenticates the external system what handles the request
-            schema:
-                type: string
-                example: eccf0e42-0a75-11ea-8d71-362b9e155665
+                default: en_GB
+                enum: [ en_GB, hu_HU ]
 
