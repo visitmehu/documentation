@@ -19,16 +19,19 @@ paths:
                     application/json:
                         schema:
                             type: object
+                            required: [
+                                    api_key, name, email, phone, zip, address, total,
+                                    payment_method, high_denomination,
+                                    pickup_date, delivery_date
+                            ]
                             properties:
                                 api_key:
                                     type: string
-                                    required: true
                                     nullable: false
                                     example: ASDNBEAVBO51654SIND4516551FSDNFSPNDF
                                     description: the restaurant's unique API key
                                 name:
                                     type: string
-                                    required: true
                                     nullable: false
                                     description: The name of the customer
                                     example: Liu Kang
@@ -37,7 +40,6 @@ paths:
                                 email:
                                     type: string
                                     format: email
-                                    required: true
                                     description: The email address of the customer
                                     example: kombat@mortal.com
                                     minLength: 1
@@ -45,7 +47,6 @@ paths:
                                     nullable: false
                                 phone:
                                     type: string
-                                    required: true
                                     minLength: 1
                                     maxLength: 32
                                     nullable: false
@@ -54,7 +55,6 @@ paths:
                                     example: +36304796937
                                 zip:
                                     type: number
-                                    required: true
                                     minLength: 4
                                     maxLength: 4
                                     example: 4024
@@ -62,7 +62,6 @@ paths:
                                     description: the zip code of the address
                                 address:
                                     type: string
-                                    required: true
                                     minLength: 1
                                     maxLength: 255
                                     example: "Debrecen, Kandia utca 1"
@@ -88,51 +87,46 @@ paths:
                                     type: number
                                     minimum: -90
                                     maximum: 90
-                                    required: false
                                     description: geo latitude of the address
                                 longitude:
                                     type: number
                                     minimum: -180
                                     maximum: 180
-                                    required: false
                                     description: geo longitude of the address
                                 total:
                                     type: number
                                     minimum: 1
-                                    required: true
                                     description: the order's total value
                                     example: 1550
                                 payment_method:
                                     type: string
                                     enum: ["cash", "online"]
                                     description: the payment method
-                                    required: true
                                     example: "cash"
                                 high_denomination:
                                     type: string
                                     nullable: true
                                     description: The order paid with high denomination
                                     enum: ["no", "5000", "10000", "20000"]
-                                    required: true
                                     example: "no"
                                 order_id:
                                     type: string
-                                    description: The order's unique id in the external system. One vendor, for one partner can upload only one order_id. If not given unix timestamp will be used
+                                    description:
+                                        The order's unique id in the external system.
+                                        One vendor, for one partner can upload only one order_id.
+                                        If not given unix timestamp will be used
                                     minLength: 1
                                     maxLength: 255
-                                    required: false
                                 internal_id:
                                     type: string
                                     description: The order's unique id in in the restaurant (if exists)
                                     minLength: 1
                                     maxLength: 255
-                                    required: false
                                 pickup_note:
                                     type: string
                                     description: Note for the delivery guy from the restaurant
                                     minLength: 1
                                     maxLength: 255
-                                    required: false
                                     nullable: true
                                     example: Please come back at the back door
                                 delivery_note:
@@ -140,19 +134,20 @@ paths:
                                     description: Note for the delivery guy from the customer
                                     minLength: 1
                                     maxLength: 255
-                                    required: false
                                     nullable: true
                                     example: Please ring twice
                                 pickup_date:
                                     type: string
-                                    description: Pickup datetime of the order. Please always use CET/CEST datetime
+                                    description:
+                                        Pickup datetime of the order. Please always use CET/CEST datetime
                                     format: ISO8601
-                                    example: 2022-11-13T20:20:39+01:00
+                                    example: "2022-11-13T20:20:39+01:00"
                                 delivery_date:
                                     type: string
-                                    description: Wanted delivery datetime of the order. Please always use CET/CEST datetime
+                                    description:
+                                        Wanted delivery datetime of the order. Please always use CET/CEST datetime
                                     format: ISO8601
-                                    example: 2022-11-13T20:20:39+01:00
+                                    example: "2022-11-13T20:20:39+01:00"
             responses:
                 '500':
                     description: General server error
@@ -169,20 +164,32 @@ paths:
                                         description: returns true if the operation was successfull otherwise false
                                         example: true
                                     data:
-                                        description: in case of success returns a readable success message othervise an object. The object keys are the fields, and in the value is an associative array with the rule, readable message pair
+                                        description:
+                                            In case of success returns a readable success message othervise an object. 
+                                            The object keys are the fields, and in the value is an associative array 
+                                            with the rule, readable message pair.
                                         oneOf:
-                                            - type: string
-                                              example: Thank you.
-                                            - type: object
-                                              example: {
-                                                  "email": {
-                                                      "email": "Invalid e-mail address. MX check failed."
-                                                  },
-                                                  "payment_method": {
-                                                      "inList": "Invalid payment method"
-                                                  }
-                                              }
+                                            - $ref: '#/components/schemas/SuccessMessage'
+                                            - $ref: '#/components/schemas/ErrorObject'
 components:
+    schemas:
+        SuccessMessage:
+            type: string
+            example: Thank you!
+            description: The 'thank you' message in case of success
+        ErrorObject:
+            type: object
+            description: The error object
+            example:
+                application/json:
+                    {
+                        "email": {
+                            "email": "Invalid e-mail address. MX check failed."
+                        },
+                        "payment_method": {
+                            "inList": "Invalid payment method"
+                        }
+                    }
     parameters:
         defaultRequestHeader:
             name: X-Requested-With
