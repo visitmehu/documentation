@@ -59,9 +59,7 @@ paths:
                                         example: true
                                     data:
                                         description:
-                                            In case of success returns a readable success message otherwise an object.
-                                            The object keys are the fields, and in the value is an associative array
-                                            with the rule, readable message pair.
+                                            In case of success is null, in case of error a readable message.
                                         oneOf:
                                             - $ref: '#/components/schemas/SuccessMessage'
                                             - $ref: '#/components/schemas/ErrorObject'
