@@ -8,6 +8,63 @@ info:
     title: VisitMe API documentation for delivery services
     version: 1.0.0
 paths:
+    /delivery-orders/check-address:
+        post:
+            summary: Checks if the VisitMe deliver to the current address
+            description:
+                This endpoint can be used for UX/UI purposes. Before placing order it's nice to show the user that we 
+                deliver to the current location or not. Please, do not cache the response because delivering to a 
+                specified address can vary to many factors, number of free drivers, weather, etc ...
+            parameters:
+                - $ref: '#/components/parameters/defaultRequestHeader'
+                - $ref: '#/components/parameters/languageRequestHeader'
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [
+                                api_key, latitude, longitude
+                            ]
+                            properties:
+                                api_key:
+                                    type: string
+                                    nullable: false
+                                    example: ASDNBEAVBO51654SIND4516551FSDNFSPNDF
+                                    description: the restaurant's unique API key
+                                latitude:
+                                    type: number
+                                    minimum: -90
+                                    maximum: 90
+                                    description: geo latitude of the address
+                                longitude:
+                                    type: number
+                                    minimum: -180
+                                    maximum: 180
+                                    description: geo longitude of the address
+            responses:
+                '500':
+                    description: General server error
+                '200':
+                    description: Returns the requested information
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                description:
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: returns true if VisitMe deliver to the address, otherwise false
+                                        example: true
+                                    data:
+                                        description:
+                                            In case of success returns a readable success message otherwise an object.
+                                            The object keys are the fields, and in the value is an associative array
+                                            with the rule, readable message pair.
+                                        oneOf:
+                                            - $ref: '#/components/schemas/SuccessMessage'
+                                            - $ref: '#/components/schemas/ErrorObject'
     /delivery-orders/add:
         post:
             summary: Request a delivery guy to the restaurant to pick up an order then deliver it
@@ -22,7 +79,8 @@ paths:
                             required: [
                                     api_key, name, email, phone, zip, address, total,
                                     payment_method, high_denomination,
-                                    pickup_date, delivery_date
+                                    pickup_date, delivery_date,
+                                    latitude, longitude
                             ]
                             properties:
                                 api_key:
@@ -157,15 +215,15 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                description: the orders's data
+                                description: the order's data
                                 properties:
                                     success:
                                         type: boolean
-                                        description: returns true if the operation was successfull otherwise false
+                                        description: returns true if the operation was successfully, otherwise false
                                         example: true
                                     data:
                                         description:
-                                            In case of success returns a readable success message othervise an object. 
+                                            In case of success returns a readable success message otherwise an object. 
                                             The object keys are the fields, and in the value is an associative array 
                                             with the rule, readable message pair.
                                         oneOf:
