@@ -225,6 +225,12 @@ paths:
                                         default: 0
                                         nullable: false
                                         description: the total packaging fee (net)
+                                    cash_handling_fee:
+                                        type: number
+                                        example: 100
+                                        default: 0
+                                        nullable: false
+                                        description: the fee applied only when the payment method/type is cash
             tags:
                 - Orders
 
