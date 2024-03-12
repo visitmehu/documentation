@@ -1,9 +1,7 @@
 openapi: 3.0.3
 servers:
-    -   url: 'https://restaurant.visitme.hu/'
+    -   url: 'https://partners.visitme.hu/'
         description: Production server.
-    -   url: 'https://partner.hungry.hu/'
-        description: Stage server. HTTP AUTH protected. Ask the VisitMe support for username/pass
 info:
     title: VisitMe API documentation for delivery services
     version: 1.0.0
@@ -264,4 +262,3 @@ components:
                 type: string
                 default: en_GB
                 enum: [ en_GB, hu_HU ]
-

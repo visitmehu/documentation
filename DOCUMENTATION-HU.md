@@ -3,12 +3,12 @@ Documentáció
 
 ## Rövid leírás
 
-
 A VisitMe™ magyarország egyik legnagyobb ételrendeléssel foglalkozó weboldala. Jelen dokumentáció abban nyújt fejlesztői segítséget, hogy rendeléseket az éttermek saját rendeszerűkben tekinthessék meg.
 
 ## Folyamat és regisztráció
 
 A rendszerünkbe két információt kell eltárulnunk.
+
 1. Hogy ön milyen URI-ra (Callback URI) kivánja a rendelésekről az értesítéseket
 2. Egy titkos kulcsban (Secret Key) is meg kell állapodnunk a hitelesség miatt. Ezt ön választhatja meg, de legalább a 32 karakter erősen ajánlott.
 
@@ -45,7 +45,6 @@ Teljesen normális az, hogy tűzfal szabályt állít be arra, hogy kiszűrje a 
 Amennyiben valamilyen WAF vagy egyéb tűzfal szoftvert használ, kérjük ezen IP címe(ke)t engedje át.
 
 ### Secret key több étterem esetében
-
 
 Abban az esetben, ha több étterem ugyan azt a szoftvert használja, a Secret Key minden esetben lehet ugyan az, amennyiben ez az authentikációt segíti.
 

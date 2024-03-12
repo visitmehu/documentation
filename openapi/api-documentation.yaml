@@ -1,13 +1,6 @@
 openapi: 3.0.3
 servers:
-    -   url: 'https://shop.hungry.hu/api'
-        description: Test server (uses test data). C.O.R.S. not supported!
-        variables:
-            username:
-                default: dev@visitme.hu
-            password:
-                default: dev@visitme.hu
-    -   url: 'https://www.visitme.hu/api'
+    -   url: 'https://partners.visitme.hu/api/v2'
         description: Production server. C.O.R.S. not supported!
 info:
     title: VisitMe API documentation
@@ -25,6 +18,8 @@ paths:
                     description: the number of the order
                     example: 2113
                     required: true
+                    schema:
+                        type: string
             responses:
                 '404':
                     description: the order cannot be found
@@ -70,7 +65,7 @@ paths:
                                         example: null
                                         nullable: true
                                         default: null
-                                        enum: [ "counpon/online", "coupon/promotional", "xpromotion", "coupon/custom" ]
+                                        enum: [ "counpon/online", "coupon/promotional", "xpromotion", "coupon/custom", null ]
                                         description: "coupon/online – the customer activated the coupon bought in exchange of vCoin in the coupon shop.
 
                                                 coupon/promotional – promotional coupon defined by the restaurant. This is usually applied on the first order, but not exclusively.
@@ -167,8 +162,7 @@ paths:
                                         type: boolean
                                         example: false
                                         description: no plastic clustery is required in the order if this is true
-                                        enum: [ "en_GB", "hu_HU" ]
-                                    full_adrress:
+                                    full_address:
                                         type: string
                                         example: 4001 Debrecen, Egyetem tér 1
                                         description: "If the full_address is used, the geo is never null and shows the exact place of the delivery in lat and Ing format.
@@ -245,6 +239,8 @@ paths:
                     description: the unique identifier of the restaurant
                     example: 379
                     required: true
+                    schema:
+                        type: string
             responses:
                 '404':
                     description: the order cannot be found
@@ -265,13 +261,13 @@ paths:
                                         type: boolean
                                         description: returns true if the operation was successfull otherwise false
                                     data:
-                                        type: array
+                                        type: object
                                         description: the unseed orders id
                                         example: [968,234,678]
             tags:
                 - Orders
 
-    /orders/edit:
+    /orders/cancel:
         post:
             summary: Modifies the status of an order.
             parameters:
@@ -282,21 +278,14 @@ paths:
                     application/json:
                         schema:
                             type: object
+                            required: [ id ]
                             properties:
                                 id:
                                     type: number
-                                    required: true
-                                    nullable: false
                                     description: the unique if of the order
-                                success:
-                                    type: boolean
-                                    required: true
-                                    description: The order is successful or not
                                 reason:
                                     type: string
-                                    required: false
                                     maxLength: 160
-                                    nullable: true
                                     description: If the order was cancelled, a reason can be provided
             responses:
                 '404':
@@ -320,190 +309,12 @@ paths:
                                         description: returns true if the operation was successfull otherwise false
                                         example: true
                                     data:
-                                        type: array
+                                        type: object
                                         description: not used
                                         example: []
             tags:
                 - Orders
 
-    /cities/index:
-        get:
-            summary: Returns all cities
-            description: Returns all the cities in the system where restaurants can be found.
-            parameters:
-                - $ref: '#/components/parameters/defaultRequestHeader'
-                - $ref: '#/components/parameters/languageRequestHeader'
-            responses:
-                '200':
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        description: returns true if the operation was successfull otherwise false
-                                    data:
-                                        type: array
-                                        description: the returned data
-                                        items:
-                                            $ref: '#/components/schemas/City'
-                    description: The current cities.
-                '500':
-                    $ref: '#/components/responses/GeneralError'
-            tags:
-                - Cities
-
-    /menus/list:
-        get:
-            summary: Returns all the menu categories of the restaurant
-            parameters:
-                -   $ref: '#/components/parameters/defaultRequestHeader'
-                -   $ref: '#/components/parameters/languageRequestHeader'
-                -   in: query
-                    name: id
-                    example: 379
-                    description: the unique id of the restaurant
-            responses:
-                '200':
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        description: returns true if the operation was successfull otherwise false
-                                    data:
-                                        type: object
-                                        description: the key is the menu category id, the value is the name of the category
-                                        example:  {
-                                            "3657": "Attila menüx544",
-                                            "3690": "qwd",
-                                            "3691": "qwdqwd",
-                                            "3681": "Név (Angol)xx",
-                                            "3658": "Drinks",
-                                            "3679": "DAVID TEST",
-                                            "3673": "Uj kategoria",
-                                            "3678": "Fruits",
-                                            "3683": "This is my favorit test category"
-                                        }
-                    description: the returned data
-                '500':
-                    $ref: '#/components/responses/GeneralError'
-            tags:
-                - Menus
-
-    /menus-extras/list:
-        get:
-            summary: Returns all the extra menu categories (toppings) of the restaurant
-            parameters:
-                -   $ref: '#/components/parameters/defaultRequestHeader'
-                -   $ref: '#/components/parameters/languageRequestHeader'
-                -   in: query
-                    name: id
-                    example: 3657
-                    description: The unique identifier of the menu category
-            responses:
-                '200':
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        description: returns true if the operation was successfull otherwise false
-                                    data:
-                                        type: object
-                                        description: the key is the menu extra category id, the value is the name of the category
-                                        example: {
-                                            "3316": "Név (Angol)Név (Angol)xx",
-                                            "3311": "Név (Angol)xxy",
-                                            "3268": "General"
-                                        }
-                    description: the returned data
-                '500':
-                    $ref: '#/components/responses/GeneralError'
-            tags:
-                - Menus
-
-    /menu-extra-items/list:
-        get:
-            summary: Returns all toppings of a restaurant in a given extra menu category.
-            parameters:
-                -   $ref: '#/components/parameters/defaultRequestHeader'
-                -   $ref: '#/components/parameters/languageRequestHeader'
-                -   in: query
-                    name: id
-                    example: 3311
-                    description: The unique identifier of the extra menu category
-            responses:
-                '200':
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        description: returns true if the operation was successfull otherwise false
-                                    data:
-                                        type: object
-                                        description: the key is the menu extra item id, the value can be null, a string or an array with strings
-                                        example:  {
-                                            "26045": "1233232321421",
-                                            "26046": "4444444444",
-                                            "26047": "33333"
-                                        }
-                    description: the returned data
-                '403':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/GeneralError'
-            tags:
-                - Menus
-
-    /menu-items/list:
-        get:
-            summary: Get a list of products ids and sku's in the specified menu category.
-            parameters:
-                -   $ref: '#/components/parameters/defaultRequestHeader'
-                -   $ref: '#/components/parameters/languageRequestHeader'
-                -   in: query
-                    name: id
-                    example: 3657
-                    description: the menu category id
-            responses:
-                '200':
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        description: returns true if the operation was successfull otherwise false
-                                    data:
-                                        type: object
-                                        description: the key is the menu item id, the value can be null, a string or an array with strings
-                                        example:  {
-                                            "35808": "8DDE6661-B066-4C16-BE4E-C33A31862F0A",
-                                            "35751": "51BAC948-5BC9-4A02-9528-07658EA1747B",
-                                            "35750": "955ABB39-AC31-4C35-B64D-FFD821BDB7FF",
-                                            "35829": {
-                                                "99C6E8": "1a",
-                                                "BF8337": "1233333"
-                                            },
-                                            "35806": "17797458-83A3-4B12-8518-1353DA28BC2F"
-                                        }
-                    description: the returned data
-                '403':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/GeneralError'
-            tags:
-                - Menus
 components:
     schemas:
         OrderItem:
@@ -558,7 +369,6 @@ components:
                             sku:
                                 type: string
                                 example: PIZZAKETCUP
-                                required: false
                                 description: unique id of this variation in an external system
                             name:
                                 type: object
@@ -639,4 +449,3 @@ components:
             schema:
                 type: string
                 example: eccf0e42-0a75-11ea-8d71-362b9e155667
-
